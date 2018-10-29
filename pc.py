@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import 
 
 
 
@@ -44,6 +45,68 @@ a = np.ones((5,5))
 a = Matrix(a)
 print(a.M)
 print(a.which(1))
+
+
+#define getnextset nextSet = getNextSet(length_nbrs, ord, S)
+def getNextSet(n, k, set):
+	ch = list(range(n-k+1, n+1))
+	zeros = [check for check in [x for x in ch if x not in set] if check == 0]
+	chind = k - zeros
+	waslast = chind == 0
+	if not waslast:
+		s_ch = set[chind] + 1
+		set[chind] = s_ch
+		if chind < k:
+			set[chind+1 : k] = range(s_ch + 1, s_ch + zeros)
+	
+	#return $nextset, $waslast
+	return set, waslast
+
+
+
+#define the indepndent test from scratch
+def Test():
+	pass
+
+
+def zstat():
+	pass
+
+def pcorOrder():
+	pass
+
+def pseudoinverse(m, tol):
+	# we need the module preform the svd
+	msvd = gen_inv(m)
+	pos_vec = [x for x in msvd['P'] if x>0]
+	if len(pos_vec) == 0:
+		return np.zeros((m.shape[::-1]))
+	else:
+		return msvd['Q'] * (1/msvd['P'])
+
+
+
+#define the singular value decomposition
+def gen_inv(a):
+        a_sq = np.dot(a.T, a)
+        eigen = np.linalg.eig(a_sq)
+        eigen_vals = eigen[0]
+        eigen_vectors = eigen[1]
+ 
+        orth = a.dot(eigen_vectors)
+        new_orth_len = np.zeros([orth.shape[1], orth.shape[1]])
+        orth_sq = orth.T.dot(orth)
+ 
+        for j in range(orth.shape[1]):
+                for i in range(orth.shape[0]):
+                        orth[i][j] /= (orth_sq[j][j] ** 0.5)
+                new_orth_len[j][j] = orth_sq[j][j] ** 0.5
+ 
+        return {"Q": orth, "lamda": new_orth_len, "P": eigen_vectors}
+
+
+
+
 
 
 
@@ -102,7 +165,28 @@ m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCo
 			if G.M[y,x] and not fixedEdges[y, x]:
 				nbrsBool = G.M[:, x]
 				nbrsBool[y] = 0
-				nbrs = seq_p
+				#merge seq_p && nbrsBool
+				nbrs = [seq_p[i] for i in range(len(seq_p)) if seq_p[i] and nbrsBool[i]]
+				length_nbrs = len(nbrs)
+				if length_nbrs >= ord:
+					if length_nbrs > ord:
+						done = False
+					S = list(range(ord))
+					while(1):
+						n_edgetests[ord1] = n_edgetests[ord1] + 1
+						pval = indepTest(x, y, nbrs[S], suffStat)
+						if pval == None:
+							pval = int(NAdelete)
+						if pMax[x,y] < pval:
+							pMax[x,y] = pval
+						if pval >= alpha:
+							G[x,y] = G[y,x] = 0
+							sepset[x][y] = nbrs[S]
+							break
+						else:
+							nextSet = getNextSet(length_nbrs, ord, S)
+
+
 		pass
 
 
