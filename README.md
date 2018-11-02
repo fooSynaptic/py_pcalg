@@ -1,6 +1,7 @@
 # py_pcalg
-Build a python edition causal inference model for Pcalg
+Build a python version causal inference model for Pcalg
 
-For there is no pc algorithm implement in python module. I want to fill the gap with our hands.
+For there is no pc algorithm implement in python module. This rep may fill the gap for people who want to explore Graph Model
 
-And, I am very interest in the causal infernce model. if you are in this direction of your research. This rep may easy the path your are exploring.
+You can find the pcalg for causal inference in link below:
+   https://CRAN.R-project.org/package=pcalg
