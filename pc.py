@@ -87,6 +87,7 @@ def pseudoinverse(m, tol):
 
 
 #define the singular value decomposition
+
 def gen_inv(a):
         a_sq = np.dot(a.T, a)
         eigen = np.linalg.eig(a_sq)
