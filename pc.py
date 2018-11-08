@@ -1,8 +1,8 @@
 import sys
 import numpy as np
 import random
-
-
+from math import sqrt, log
+import random
 
 
 class Matrix(object):
@@ -66,15 +66,45 @@ def getNextSet(n, k, set):
 
 
 #define the indepndent test from scratch
-def Test():
-	pass
+# pval = indepTest(x, y, nbrs[S], suffStat)
+# suffstat(1: cormatrix, 2:nubmer of dim)
+def Test(x, y, S, suffStat):
+	z = zstat(x, y, S, suffStat[0], suffStat[1])
+	cnt = 0
+	cset = []
+	while cnt < 100:
+		rand = random.normalvariate(00, 1)
+		cset.append(cset)
+	p = len([x for x in range(100) if x<z])/100
+
+	return p
 
 
-def zstat():
-	pass
+# zStat() gives a number
+# Z = sqrt(n - |S| - 3) * log((1+r)/(1-r))/2
+def zstat(x, y, S, C, n):
+	r = pcorOrder(x,y,S,C)
+	res = sqrt(n - len(S) - 3)*0.5*log((1+r)/(1-r))/2
+	if not res:
+		return 0
+	else:
+		return res
 
-def pcorOrder():
-	pass
+
+# compute partial corrlations
+def pcorOrder(i, j, k, C, cut = 0.99999):
+	if len(k) == 0:
+		r = C[i, j]
+	elif len(k) == 1:
+		r = (C[i,j] - C[i,k]*C[j,k])/sqrt((1 - C[j,k]**2)*(1 - C[i,k]**2)
+	else:
+		PM = pseudoinverse((i,j,k), (i,j,k))
+		r = - PM[1,2]/sqrt(PM[1,1]*PM[2,2])
+	if not r:
+		return 0
+	else:
+		return min(cut, max(-cut, r))
+	
 
 def pseudoinverse(m, tol):
 	# we need the module preform the svd
@@ -94,6 +124,7 @@ gen_inv = np.linalg.svd
 
 #test
 a = np.random.randn(50, 50)
+
 #print(gen_inv(a, compute_uv = False))
 
 
