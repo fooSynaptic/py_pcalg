@@ -89,13 +89,12 @@ def pseudoinverse(m, tol):
 
 #define the singular value decomposition
 
+
 gen_inv = np.linalg.svd
 
 #test
 a = np.random.randn(50, 50)
 #print(gen_inv(a, compute_uv = False))
-
-
 
 
 
