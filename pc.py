@@ -1,6 +1,7 @@
 import sys
 import numpy as np
-import 
+import random
+
 
 
 
@@ -78,31 +79,21 @@ def pcorOrder():
 def pseudoinverse(m, tol):
 	# we need the module preform the svd
 	msvd = gen_inv(m)
-	pos_vec = [x for x in msvd['P'] if x>0]
+	pos_vec = [x for x in msvd[1] if x>0]
 	if len(pos_vec) == 0:
 		return np.zeros((m.shape[::-1]))
 	else:
-		return msvd['Q'] * (1/msvd['P'])
+		return np.dot(msvd[2], (np.array([1/x for x in pos_vec]) * msvd[0].T))
 
 
 
 #define the singular value decomposition
-def gen_inv(a):
-        a_sq = np.dot(a.T, a)
-        eigen = np.linalg.eig(a_sq)
-        eigen_vals = eigen[0]
-        eigen_vectors = eigen[1]
- 
-        orth = a.dot(eigen_vectors)
-        new_orth_len = np.zeros([orth.shape[1], orth.shape[1]])
-        orth_sq = orth.T.dot(orth)
- 
-        for j in range(orth.shape[1]):
-                for i in range(orth.shape[0]):
-                        orth[i][j] /= (orth_sq[j][j] ** 0.5)
-                new_orth_len[j][j] = orth_sq[j][j] ** 0.5
- 
-        return {"Q": orth, "lamda": new_orth_len, "P": eigen_vectors}
+
+gen_inv = np.linalg.svd
+
+#test
+a = np.random.randn(50, 50)
+#print(gen_inv(a, compute_uv = False))
 
 
 
