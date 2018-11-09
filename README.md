@@ -5,3 +5,6 @@ For there is no pc algorithm implement in python module. This rep may fill the g
 
 You can find the pcalg for causal inference in link below:
    https://CRAN.R-project.org/package=pcalg
+
+
+updated the independ test function, run debug_trivial() in pc.py to test.
