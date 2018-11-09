@@ -3,161 +3,17 @@ import numpy as np
 import random
 from math import sqrt, log
 import pandas as pd
- 
+from utlis import *
 
 #set random vector
 cset = 1 * np.random.random_sample((10000)) - 1
 
-class Matrix(object):
-	def __init__(self, M):
-		self.M = M
-		self.shape = M.shape
-		
-	def diag(self, val):
-		x, y = self.shape
-		assert x == y
-		for i in range(x):
-			for j in range(y):
-				self.M[x,y] == val
-				
-	def any(self):
-		x, y = self.shape
-		assert x==y
-		for i in range(x):
-			for j in range(y):
-				if self.M[i,j] == 1:
-					return True
-		else:
-			return False
-	
-	def numeric(self, n):
-		return tuple([0]*n)
 
-	def which(self, val):
-		idx = []
-		x, y = self.shape
-		assert x == y
-		for i in range(x):
-			for j in range(y):
-				if self.M[i, j] == val:
-					idx.append((i,j))
-		return idx
-
-'''
-a = np.ones((5,5))
-
-a = Matrix(a)
-print(a.M)
-print(a.which(1))
-'''
-
-#define getnextset nextSet = getNextSet(length_nbrs, ord, S)
-def getNextSet(n, k, set):
-	ch = list(range(n-k+1, n+1))
-	zeros = [check for check in [x for x in ch if x not in set] if check == 0]
-	chind = k - zeros
-	waslast = chind == 0
-	if not waslast:
-		s_ch = set[chind] + 1
-		set[chind] = s_ch
-		if chind < k:
-			set[chind+1 : k] = range(s_ch + 1, s_ch + zeros)
-	
-	#return $nextset, $waslast
-	return set, waslast
-
-
-
-#define the indepndent test from scratch
-# pval = indepTest(x, y, nbrs[S], suffStat)
-# suffstat(1: cormatrix, 2:nubmer of dim)
-def Test(x, y, S, suffStat):
-	z = zstat(x, y, S, suffStat[0], suffStat[1])
-	print("we got the indepedent statistical val of :\t", z)
-	cnt = 0
-	#cset = 1 * np.random.random_sample((10000)) - 1
-	p = len([x for x in range(100000) if x<z])/100000
-	return p
-
-
-# zStat() gives a number
-# Z = sqrt(n - |S| - 3) * log((1+r)/(1-r))/2
-def zstat(x, y, S, C, n):
-	try:
-		assert isinstance(S, list)
-	except:
-		S = [S]
-
-	r = pcorOrder(x,y,S[0],C)
-	res = sqrt(n - len(S) - 3)*0.5*log((1+r)/(1-r))/2
-	if not res:
-		return 0
-	else:
-		return res
-
-
-# compute partial corrlations
-
-def pcorOrder(i,j,k,C, cut = 0.99999):
-	k = [k]
-	if len(k) == 0:
-		r = C[i,j]
-	elif len(k) == 1:
-		idx = k[0]
-		r = (C[i][j] - C[i][idx]*C[j][idx])/sqrt((1 - C[j][idx]**2)*(1 - C[i][idx]**2))
-	else:
-		mat = C[[i,j,k]].iloc[[i,j,k],:]
-		_pm = pseudoinverse(mat)
-		r = - _pm[2][1]/sqrt(_pm[1][1]*_pm[2][2])
-	#print(type(r), r.values())
-	if not r:
-		return 0
-	else:
-		return min(cut, max(-cut, r))
-
-	
-
-def pseudoinverse(m):
-	# we need the module preform the svd
-	msvd = gen_inv(m)
-	pos_vec = [x for x in msvd[1] if x>0]
-	if len(pos_vec) == 0:
-		return np.zeros((m.shape[::-1]))
-	else:
-		return np.dot(msvd[2], (np.array([1/x for x in pos_vec]) * msvd[0].T))
-
-
-
-#define the singular value decomposition
-
-
-gen_inv = np.linalg.svd
-
-#test
-def debug_trivial():
-	a = np.random.randn(50, 50)
-	rev = pseudoinverse(a)
-	print('rev eigen', rev)
-	#correlation matrix
-	dfa = pd.DataFrame(a).corr()
-	pcor = pcorOrder(1,2,3,dfa)
-	print("partial correlation", pcor)
-
-
-	zs = zstat(1, 2, 3, dfa, 50)
-	print("z statitical", zs)
-
-	print("final test:", Test(1,2,3, [dfa, 50]))
-#print(gen_inv(a, compute_uv = False))
-
-
-
-
-
-def skeletion(suffStat, indepTest, alpha, labels, method, fixedGaps=None, fixdEdges=None, NAdelete=True,\
+def skeletion(suffStat, indepTest, alpha, labels, fixedGaps=None, fixedEdges=None, NAdelete=True,\
 m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCores = 1, verbose = False):
 	try:
-		l, p = labels, p
+		l = labels
+		p = len(labels)
 	except:
 		raise Exception("Argument need to specify 'labels' or 'p'!")
 
@@ -170,14 +26,20 @@ m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCo
 		raise Exception("fixedGaps must be symmetric.")
 	else:
 		G = np.zeros(shape = (p, p))
+	'''
 	for i in range(G.shape[0]):
 		for j in range(G.shape[1]):
 			if i == j:
 				G[i,j] == 0
+	'''
+	#class G as a matrix class
+	G = Matrix(G)
+	#set diag
+	G.diag(0)
 	
 	#initial the fixedEdges if it's none
 	if not fixedEdges:
-		fixdEdges = np.zeros(shape = (p,p))
+		fixedEdges = np.zeros(shape = (p,p))
 
 	'''
 	if method == "stable.fast":
@@ -189,17 +51,19 @@ m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCo
 	#inference
 	pval = None
 	sepset = [[None]*p for i in range(p)]
-	pMax = np.matrix([float('Inf') for i in range(p)])
-	pMax = diag(pMax, 1)
+	pMax = np.matrix([float('Inf') for i in range(p*p)]).reshape(p, -1)
+	pMax = Matrix(pMax)
+	pMax.diag(1)
 	done = False
 	ord = 0
 
-	n_edgetests = numeric(1)
-	while not done and any(G) and ord <= m_max:
+	n_edgetests = [0]*p
+	while not done and G.any() and ord <= m_max:
 		ord1 = ord + 1
 		n_edgetests[ord1] = 0
 		done = True
 		ind = G.which(1)
+
 		remEdges = G.shape[1]
 
 		for i in range(remEdges):
@@ -215,23 +79,42 @@ m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCo
 				if length_nbrs >= ord:
 					if length_nbrs > ord:
 						done = False
-					S = list(range(ord))
+					S = list(range(ord+1))
+					if len(S) == 0:
+						return G
+					
 					while(1):
 						n_edgetests[ord1] = n_edgetests[ord1] + 1
-						pval = indepTest(x, y, nbrs[S], suffStat)
-						if pval == None:
+						try:
+							pval = indepTest(x, y, [nbrs[x] for x in S if x <= len(nbrs)], suffStat)
+						except:
+							print(S, nbrs)
+						if not pval:
 							pval = int(NAdelete)
-						if pMax[x,y] < pval:
+						if pMax.M[x,y] < pval:
 							pMax[x,y] = pval
-						if pval >= alpha:
-							G[x,y] = G[y,x] = 0
-							sepset[x][y] = nbrs[S]
+						elif pval >= alpha:
+							G.M[x,y] = G.M[y,x] = 0
+							try:
+								sepset[x][y] = [nbrs[x] for x in S]
+							except:
+								return G
+								
 							break
 						else:
 							nextSet = getNextSet(length_nbrs, ord, S)
+						if nextSet['waslast']:
+							break
+						S = nextSet['set']
+						# end for loop
+		ord = ord + 1
+		#end while loop
+	for i in range(1, p):
+		for j in range(2, p):
+			pMax.M[i,j] = pMax.M[j,i] = max(pMax.M[i,j], pMax.M[j,i])
 
 
-		pass
+	return G
 
 
 
@@ -257,3 +140,34 @@ solve_confl = False, numCores = 1, verbose = False):
 	pass
 
 #pc()
+
+
+def debug_trivial():
+	a = np.random.randn(50, 50)
+	rev = pseudoinverse(a)
+	print('rev eigen', rev)
+	#correlation matrix
+	dfa = pd.DataFrame(a).corr()
+	pcor = pcorOrder(1,2,3,dfa)
+	print("partial correlation", pcor)
+
+
+	zs = zstat(1, 2, 3, dfa, 50)
+	print("z statitical", zs)
+
+	print("final test:", indTest(1,2,3, [dfa, 50]))
+	print("Test the next independent set:\n",'***'*5)
+	next = getNextSet(5, 2, [1,2])
+	print(next, "refer: [1,3], False")
+	next = getNextSet(5, 2, [4,5])
+	print(next, "refer: [4,5], True")
+
+	grap = skeletion([dfa, 50], indTest, alpha = 0.05, labels = list(range(50)), fixedGaps=None, fixedEdges=None, NAdelete=True,\
+m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCores = 1, verbose = False)
+	print(grap.M)
+
+
+
+if __name__ == "__main__":
+	debug_trivial()
+	#pass
