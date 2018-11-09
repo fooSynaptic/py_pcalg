@@ -2,8 +2,11 @@ import sys
 import numpy as np
 import random
 from math import sqrt, log
-import random
+import pandas as pd
+ 
 
+#set random vector
+cset = 1 * np.random.random_sample((10000)) - 1
 
 class Matrix(object):
 	def __init__(self, M):
@@ -38,15 +41,15 @@ class Matrix(object):
 			for j in range(y):
 				if self.M[i, j] == val:
 					idx.append((i,j))
-
 		return idx
 
+'''
 a = np.ones((5,5))
 
 a = Matrix(a)
 print(a.M)
 print(a.which(1))
-
+'''
 
 #define getnextset nextSet = getNextSet(length_nbrs, ord, S)
 def getNextSet(n, k, set):
@@ -70,20 +73,22 @@ def getNextSet(n, k, set):
 # suffstat(1: cormatrix, 2:nubmer of dim)
 def Test(x, y, S, suffStat):
 	z = zstat(x, y, S, suffStat[0], suffStat[1])
+	print("we got the indepedent statistical val of :\t", z)
 	cnt = 0
-	cset = []
-	while cnt < 100:
-		rand = random.normalvariate(00, 1)
-		cset.append(cset)
-	p = len([x for x in range(100) if x<z])/100
-
+	#cset = 1 * np.random.random_sample((10000)) - 1
+	p = len([x for x in range(100000) if x<z])/100000
 	return p
 
 
 # zStat() gives a number
 # Z = sqrt(n - |S| - 3) * log((1+r)/(1-r))/2
 def zstat(x, y, S, C, n):
-	r = pcorOrder(x,y,S,C)
+	try:
+		assert isinstance(S, list)
+	except:
+		S = [S]
+
+	r = pcorOrder(x,y,S[0],C)
 	res = sqrt(n - len(S) - 3)*0.5*log((1+r)/(1-r))/2
 	if not res:
 		return 0
@@ -92,21 +97,27 @@ def zstat(x, y, S, C, n):
 
 
 # compute partial corrlations
-def pcorOrder(i, j, k, C, cut = 0.99999):
+
+def pcorOrder(i,j,k,C, cut = 0.99999):
+	k = [k]
 	if len(k) == 0:
-		r = C[i, j]
+		r = C[i,j]
 	elif len(k) == 1:
-		r = (C[i,j] - C[i,k]*C[j,k])/sqrt((1 - C[j,k]**2)*(1 - C[i,k]**2)
+		idx = k[0]
+		r = (C[i][j] - C[i][idx]*C[j][idx])/sqrt((1 - C[j][idx]**2)*(1 - C[i][idx]**2))
 	else:
-		PM = pseudoinverse((i,j,k), (i,j,k))
-		r = - PM[1,2]/sqrt(PM[1,1]*PM[2,2])
+		mat = C[[i,j,k]].iloc[[i,j,k],:]
+		_pm = pseudoinverse(mat)
+		r = - _pm[2][1]/sqrt(_pm[1][1]*_pm[2][2])
+	#print(type(r), r.values())
 	if not r:
 		return 0
 	else:
 		return min(cut, max(-cut, r))
+
 	
 
-def pseudoinverse(m, tol):
+def pseudoinverse(m):
 	# we need the module preform the svd
 	msvd = gen_inv(m)
 	pos_vec = [x for x in msvd[1] if x>0]
@@ -123,8 +134,20 @@ def pseudoinverse(m, tol):
 gen_inv = np.linalg.svd
 
 #test
-a = np.random.randn(50, 50)
+def debug_trivial():
+	a = np.random.randn(50, 50)
+	rev = pseudoinverse(a)
+	print('rev eigen', rev)
+	#correlation matrix
+	dfa = pd.DataFrame(a).corr()
+	pcor = pcorOrder(1,2,3,dfa)
+	print("partial correlation", pcor)
 
+
+	zs = zstat(1, 2, 3, dfa, 50)
+	print("z statitical", zs)
+
+	print("final test:", Test(1,2,3, [dfa, 50]))
 #print(gen_inv(a, compute_uv = False))
 
 
