@@ -4,6 +4,7 @@ import random
 from math import sqrt, log
 import pandas as pd
 from utlis import *
+from graph import grapher
 
 #set random vector
 cset = 1 * np.random.random_sample((10000)) - 1
@@ -143,7 +144,18 @@ solve_confl = False, numCores = 1, verbose = False):
 
 
 def debug_trivial():
+	'''
 	a = np.random.randn(50, 50)
+	'''
+
+	b = pd.read_csv('/Users/ajmd/code/R/graph_model/py_pcalg/test_data.csv')
+	data = np.array(b.iloc[:,:])[:,1:]
+	a = pd.DataFrame(data).corr()
+	#names =["space","中","体育讯","分","新浪","比赛","球员","球队","日","月","北京","时间"]
+	names = ['space', 'middle', 'Sports', 'min', 'sina', 'match', 'player', 'team', 'day', 'month', 'peking', 'time']
+	assert data.shape[1]==len(names)
+	label_dict = dict(zip(list(range(data.shape[1])), names))
+
 	rev = pseudoinverse(a)
 	print('rev eigen', rev)
 	#correlation matrix
@@ -152,19 +164,22 @@ def debug_trivial():
 	print("partial correlation", pcor)
 
 
-	zs = zstat(1, 2, 3, dfa, 50)
+	zs = zstat(1, 2, 3, dfa, a.shape[1])
 	print("z statitical", zs)
 
-	print("final test:", indTest(1,2,3, [dfa, 50]))
+	print("final test:", indTest(1,2,3, [dfa, a.shape[1]]))
 	print("Test the next independent set:\n",'***'*5)
 	next = getNextSet(5, 2, [1,2])
 	print(next, "refer: [1,3], False")
 	next = getNextSet(5, 2, [4,5])
 	print(next, "refer: [4,5], True")
 
-	grap = skeletion([dfa, 50], indTest, alpha = 0.05, labels = list(range(50)), fixedGaps=None, fixedEdges=None, NAdelete=True,\
+	grap = skeletion([dfa, a.shape[1]], indTest, alpha = 0.05, labels = list(range(a.shape[1])), fixedGaps=None, fixedEdges=None, NAdelete=True,\
 m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCores = 1, verbose = False)
-	print(grap.M)
+	print(grap.M, grap.shape)
+	#return
+
+	grapher(grap, label_dict)
 
 
 
