@@ -13,4 +13,4 @@ skeleton function fullfill, now you can try to inference the causal structural w
 
 just run pc!
 
-I will update module for visualization for soon.
+I will update visualization modules for soon.
