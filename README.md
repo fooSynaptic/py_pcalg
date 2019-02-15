@@ -8,6 +8,7 @@ You can find the pcalg for causal inference in link below:
 
 
 **Usage**
+
 updated the independ test function, run `debug_trivial()` in `pc.py` to test.
 
 skeleton function fullfill, now you can try to inference the causal structural with skel.
