@@ -10,6 +10,7 @@ from graph import grapher
 cset = 1 * np.random.random_sample((10000)) - 1
 
 
+
 def skeletion(suffStat, indepTest, alpha, labels, fixedGaps=None, fixedEdges=None, NAdelete=True,\
 m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCores = 1, verbose = False):
 	try:
@@ -84,7 +85,7 @@ m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCo
 					if len(S) == 0:
 						return G
 					
-					while(1):
+					while True:
 						n_edgetests[ord1] = n_edgetests[ord1] + 1
 						try:
 							pval = indepTest(x, y, [nbrs[x] for x in S if x <= len(nbrs)], suffStat)
@@ -118,17 +119,6 @@ m_max = float('Inf'), u2pd=("relaxed","rand","retry"),solve_confl = False, numCo
 	return G
 
 
-
-
-
-
-
-
-	pass
-	
-
-
-
 def pc(suffStat, indepTest, alpha, labels, p, fixedGaps=None, fixdEdges=None, NAdelete=True,\
 m_max = float('Inf'), u2pd=("relaxed","rand","retry"), skel_method = ('stable','original'),\
 solve_confl = False, numCores = 1, verbose = False):
@@ -136,10 +126,6 @@ solve_confl = False, numCores = 1, verbose = False):
 		l, p = labels, p
 	except:
 		raise Exception("Argument need to specify 'labels' or 'p'!")
-
-	
-	pass
-
 #pc()
 
 
@@ -148,7 +134,7 @@ def debug_trivial():
 	a = np.random.randn(50, 50)
 	'''
 
-	b = pd.read_csv('/Users/ajmd/code/R/graph_model/py_pcalg/test_data.csv')
+	b = pd.read_csv('./test_data.csv')
 	data = np.array(b.iloc[:,:])[:,1:]
 	a = pd.DataFrame(data).corr()
 	#names =["space","中","体育讯","分","新浪","比赛","球员","球队","日","月","北京","时间"]
