@@ -4,6 +4,7 @@ import random
 from math import sqrt, log
 import pandas as pd
 
+
 class Matrix(object):
 	def __init__(self, M):
 		self.M = M
@@ -106,7 +107,6 @@ def zstat(x, y, S, C, n):
 
 
 # compute partial corrlations
-
 def pcorOrder(i,j,k,C, cut = 0.99999):
 	k = [k]
 	if len(k) == 0:
@@ -138,6 +138,4 @@ def pseudoinverse(m):
 
 
 #define the singular value decomposition
-
-
 gen_inv = np.linalg.svd
