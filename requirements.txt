@@ -1,0 +1,15 @@
+# py_pcalg 依赖
+# Python 版本: >= 3.7
+
+# 核心依赖
+numpy>=1.19.0
+pandas>=1.0.0
+
+# 可视化
+matplotlib>=3.3.0
+networkx>=2.5
+
+# 可选: 用于文本处理模块 (text_structured.py)
+# gensim>=4.0.0
+# jieba>=0.42.0
+
