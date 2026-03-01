@@ -114,7 +114,7 @@ def visualize_graph(
         >>> G = visualize_graph(adj, labels, title="My Causal Graph")
     """
     # 创建无向图
-    G = nx.Graph()
+    graph = nx.Graph()
     
     # 转换为边列表并添加到图中
     edge_list = matrix_to_edge_list(adj_matrix, label_dict)
@@ -122,17 +122,17 @@ def visualize_graph(
     if not edge_list:
         print("警告: 图中没有边")
     
-    G.add_weighted_edges_from(edge_list)
+    graph.add_weighted_edges_from(edge_list)
     
     # 打印边信息
     print(f"\n图结构信息:")
-    print(f"  节点数: {G.number_of_nodes()}")
-    print(f"  边数: {G.number_of_edges()}")
+    print(f"  节点数: {graph.number_of_nodes()}")
+    print(f"  边数: {graph.number_of_edges()}")
     print(f"  边列表: {edge_list}")
     
     # 打印低权重边（如果存在）
     low_weight_edges = []
-    for node, neighbors in G.adj.items():
+    for node, neighbors in graph.adj.items():
         for neighbor, attrs in neighbors.items():
             weight = attrs.get('weight', 1.0)
             if weight < 0.5:
@@ -157,11 +157,11 @@ def visualize_graph(
     }
     
     layout_func = layout_functions.get(layout, nx.spring_layout)
-    pos = layout_func(G)
+    pos = layout_func(graph)
     
     # 绘制图形
     nx.draw(
-        G, 
+        graph, 
         pos,
         with_labels=True,
         node_color=node_color,
@@ -174,9 +174,9 @@ def visualize_graph(
     
     # 显示边权重（如果需要）
     if show_edge_weights:
-        edge_labels = nx.get_edge_attributes(G, 'weight')
+        edge_labels = nx.get_edge_attributes(graph, 'weight')
         edge_labels = {k: f'{v:.2f}' for k, v in edge_labels.items()}
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels)
     
     plt.title(title, fontsize=14, fontweight='bold')
     plt.tight_layout()
@@ -188,7 +188,7 @@ def visualize_graph(
     
     plt.show()
     
-    return G
+    return graph
 
 
 # 保持向后兼容的别名
@@ -216,7 +216,7 @@ def create_directed_graph(
     Note:
         有向图中 adj_matrix[i, j] = 1 表示存在边 i -> j
     """
-    DG = nx.DiGraph()
+    directed_graph = nx.DiGraph()
     
     rows, cols = adj_matrix.shape
     for i in range(rows):
@@ -224,9 +224,9 @@ def create_directed_graph(
             if i != j and adj_matrix.M[i, j] > 0:
                 source = label_dict.get(i, str(i))
                 target = label_dict.get(j, str(j))
-                DG.add_edge(source, target, weight=adj_matrix.M[i, j])
+                directed_graph.add_edge(source, target, weight=adj_matrix.M[i, j])
     
-    return DG
+    return directed_graph
 
 
 def visualize_directed_graph(
@@ -247,13 +247,13 @@ def visualize_directed_graph(
     Returns:
         nx.DiGraph: 有向图对象
     """
-    DG = create_directed_graph(adj_matrix, label_dict)
+    directed_graph = create_directed_graph(adj_matrix, label_dict)
     
     plt.figure(figsize=kwargs.get('figsize', (12, 8)))
-    pos = nx.spring_layout(DG)
+    pos = nx.spring_layout(directed_graph)
     
     nx.draw(
-        DG,
+        directed_graph,
         pos,
         with_labels=True,
         node_color=kwargs.get('node_color', '#FFB6C1'),
@@ -270,7 +270,7 @@ def visualize_directed_graph(
     plt.tight_layout()
     plt.show()
     
-    return DG
+    return directed_graph
 
 
 # 示例用法和测试
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     print("=" * 40)
     
     # 测试无向图可视化
-    G = visualize_graph(
+    graph = visualize_graph(
         test_matrix,
         test_labels,
         title="测试无向图",
