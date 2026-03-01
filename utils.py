@@ -38,22 +38,22 @@ class Matrix:
         True
     """
     
-    def __init__(self, M: np.ndarray):
+    def __init__(self, matrix: np.ndarray):
         """
         初始化矩阵对象
         
         Args:
-            M: numpy 数组，通常是邻接矩阵
+            matrix: numpy 数组，通常是邻接矩阵
         """
-        self.M = M
-        self.shape = M.shape
+        self.M = matrix
+        self.shape = matrix.shape
     
-    def diag(self, val: Union[int, float]) -> None:
+    def diag(self, value: Union[int, float]) -> None:
         """
         将矩阵对角线元素设置为指定值
         
         Args:
-            val: 要设置的对角线值
+            value: 要设置的对角线值
             
         Raises:
             AssertionError: 如果矩阵不是方阵
@@ -65,7 +65,7 @@ class Matrix:
         """
         rows, cols = self.shape
         assert rows == cols, "Matrix must be square"
-        np.fill_diagonal(self.M, val)
+        np.fill_diagonal(self.M, value)
     
     def any(self) -> bool:
         """
@@ -83,14 +83,14 @@ class Matrix:
         assert rows == cols, "Matrix must be square"
         return np.any(self.M == 1)
     
-    def which(self, val: Union[int, float]) -> np.ndarray:
+    def which(self, value: Union[int, float]) -> np.ndarray:
         """
         查找矩阵中等于指定值的所有元素索引
         
         返回的索引按列优先排序，用于遍历图中的边。
         
         Args:
-            val: 要查找的值
+            value: 要查找的值
             
         Returns:
             np.ndarray: 形状为 (n, 2) 的数组，每行是一个 (row, col) 索引对
@@ -106,8 +106,8 @@ class Matrix:
         rows, cols = self.shape
         assert rows == cols, "Matrix must be square"
         
-        # 找到所有等于 val 的元素索引
-        indices = np.argwhere(self.M == val)
+        # 找到所有等于 value 的元素索引
+        indices = np.argwhere(self.M == value)
         
         if len(indices) == 0:
             return indices
@@ -185,8 +185,8 @@ def get_next_set(n: int, k: int, current_set: List[int]) -> Optional[Dict[str, A
 getNextSet = get_next_set
 
 
-def independence_test(x: int, y: int, S: Union[int, List[int]], 
-                      suff_stat: List) -> float:
+def independence_test(x: int, y: int, condition_set: Union[int, List[int]], 
+                      sufficient_stat: List) -> float:
     """
     执行条件独立性检验
     
@@ -195,8 +195,8 @@ def independence_test(x: int, y: int, S: Union[int, List[int]],
     Args:
         x: 第一个变量的索引
         y: 第二个变量的索引
-        S: 条件集变量索引（单个整数或整数列表）
-        suff_stat: 充分统计量列表 [相关矩阵, 样本数量]
+        condition_set: 条件集变量索引（单个整数或整数列表）
+        sufficient_stat: 充分统计量列表 [相关矩阵, 样本数量]
         
     Returns:
         float: p 值，接近 1 表示条件独立，接近 0 表示条件相关
@@ -211,7 +211,7 @@ def independence_test(x: int, y: int, S: Union[int, List[int]],
     Note:
         这是一个基于正态分布假设的参数化检验方法
     """
-    z = z_statistic(x, y, S, suff_stat[0], suff_stat[1])
+    z = z_statistic(x, y, condition_set, sufficient_stat[0], sufficient_stat[1])
     print(f"独立性统计量 z = {z:.4f}")
     
     # 使用经验分布估计 p 值
@@ -226,8 +226,8 @@ def independence_test(x: int, y: int, S: Union[int, List[int]],
 indTest = independence_test
 
 
-def z_statistic(x: int, y: int, S: Union[int, List[int]], 
-                C: pd.DataFrame, n: int) -> float:
+def z_statistic(x: int, y: int, condition_set: Union[int, List[int]], 
+                corr_matrix: pd.DataFrame, n_samples: int) -> float:
     """
     计算 Fisher's Z 变换统计量
     
@@ -240,9 +240,9 @@ def z_statistic(x: int, y: int, S: Union[int, List[int]],
     Args:
         x: 第一个变量的索引
         y: 第二个变量的索引
-        S: 条件集变量索引
-        C: 相关系数矩阵 (pandas DataFrame)
-        n: 样本数量
+        condition_set: 条件集变量索引
+        corr_matrix: 相关系数矩阵 (pandas DataFrame)
+        n_samples: 样本数量
         
     Returns:
         float: Z 统计量值
@@ -252,18 +252,18 @@ def z_statistic(x: int, y: int, S: Union[int, List[int]],
         the correlation coefficient in samples from an indefinitely 
         large population.
     """
-    # 确保 S 是列表
-    if not isinstance(S, list):
-        S = [S]
+    # 确保 condition_set 是列表
+    if not isinstance(condition_set, list):
+        condition_set = [condition_set]
     
-    print(f"条件集 S = {S}")
+    print(f"条件集 S = {condition_set}")
     
     # 计算偏相关系数
-    r = partial_correlation(x, y, S[0] if S else None, C)
+    r = partial_correlation(x, y, condition_set[0] if condition_set else None, corr_matrix)
     
     # 计算 Fisher's Z 变换
     # 注意: 原公式分母多了一个 /2，这里保持与原代码一致
-    degrees_of_freedom = n - len(S) - 3
+    degrees_of_freedom = n_samples - len(condition_set) - 3
     if degrees_of_freedom <= 0:
         return 0
         
@@ -280,7 +280,7 @@ zstat = z_statistic
 
 
 def partial_correlation(i: int, j: int, k: Optional[int], 
-                        C: pd.DataFrame, cut: float = 0.99999) -> float:
+                        corr_matrix: pd.DataFrame, cut: float = 0.99999) -> float:
     """
     计算偏相关系数
     
@@ -293,7 +293,7 @@ def partial_correlation(i: int, j: int, k: Optional[int],
         i: 第一个变量的索引
         j: 第二个变量的索引
         k: 控制变量的索引，None 表示计算简单相关
-        C: 相关系数矩阵 (pandas DataFrame)
+        corr_matrix: 相关系数矩阵 (pandas DataFrame)
         cut: 截断阈值，避免返回 ±1 导致后续计算问题
         
     Returns:
@@ -313,13 +313,13 @@ def partial_correlation(i: int, j: int, k: Optional[int],
     
     if len(k_list) == 0:
         # 简单相关系数
-        r = C.iloc[i, j] if hasattr(C, 'iloc') else C[i, j]
+        r = corr_matrix.iloc[i, j] if hasattr(corr_matrix, 'iloc') else corr_matrix[i, j]
     elif len(k_list) == 1:
         # 一阶偏相关
         idx = k_list[0]
-        r_ij = C.iloc[j, i] if hasattr(C, 'iloc') else C[j][i]
-        r_ik = C.iloc[idx, i] if hasattr(C, 'iloc') else C[idx][i]
-        r_jk = C.iloc[idx, j] if hasattr(C, 'iloc') else C[idx][j]
+        r_ij = corr_matrix.iloc[j, i] if hasattr(corr_matrix, 'iloc') else corr_matrix[j][i]
+        r_ik = corr_matrix.iloc[idx, i] if hasattr(corr_matrix, 'iloc') else corr_matrix[idx][i]
+        r_jk = corr_matrix.iloc[idx, j] if hasattr(corr_matrix, 'iloc') else corr_matrix[idx][j]
         
         denominator = sqrt((1 - r_jk**2) * (1 - r_ik**2))
         if denominator == 0:
@@ -328,7 +328,7 @@ def partial_correlation(i: int, j: int, k: Optional[int],
     else:
         # 高阶偏相关，使用精度矩阵方法
         indices = [i, j] + k_list
-        sub_matrix = C.iloc[indices, indices] if hasattr(C, 'iloc') else C[indices][:, indices]
+        sub_matrix = corr_matrix.iloc[indices, indices] if hasattr(corr_matrix, 'iloc') else corr_matrix[indices][:, indices]
         precision_matrix = pseudoinverse(sub_matrix)
         
         denominator = sqrt(precision_matrix[1, 1] * precision_matrix[2, 2])
@@ -347,14 +347,14 @@ def partial_correlation(i: int, j: int, k: Optional[int],
 pcorOrder = partial_correlation
 
 
-def pseudoinverse(m: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
+def pseudoinverse(matrix: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
     """
     计算矩阵的 Moore-Penrose 伪逆
     
     使用奇异值分解 (SVD) 计算伪逆矩阵。
     
     Args:
-        m: 输入矩阵 (numpy array 或 pandas DataFrame)
+        matrix: 输入矩阵 (numpy array 或 pandas DataFrame)
         
     Returns:
         np.ndarray: 伪逆矩阵
@@ -368,14 +368,14 @@ def pseudoinverse(m: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
         对于奇异矩阵或接近奇异的矩阵，伪逆提供最小二乘解
     """
     # 执行奇异值分解
-    U, S, Vh = np.linalg.svd(m)
+    U, S, Vh = np.linalg.svd(matrix)
     
     # 找出正的奇异值
     positive_singular_values = [s for s in S if s > 0]
     
     if len(positive_singular_values) == 0:
         # 如果没有正奇异值，返回零矩阵
-        return np.zeros(m.shape[::-1])
+        return np.zeros(matrix.shape[::-1])
     
     # 计算伪逆: V * S^(-1) * U^T
     S_inv = np.array([1/s for s in positive_singular_values])
@@ -385,4 +385,3 @@ def pseudoinverse(m: Union[np.ndarray, pd.DataFrame]) -> np.ndarray:
 # 奇异值分解函数别名
 svd_decomposition = np.linalg.svd
 gen_inv = np.linalg.svd
-

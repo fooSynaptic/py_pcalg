@@ -108,18 +108,18 @@ def skeleton(
     # 初始化邻接矩阵
     if fixed_gaps is None:
         # 初始化为完全图（所有变量两两相连）
-        G = np.ones(shape=(p, p))
+        graph_matrix = np.ones(shape=(p, p))
     else:
         # 验证固定间隙矩阵
         if fixed_gaps.shape != (p, p):
             raise Exception("fixed_gaps 的维度与数据集不匹配")
         if not np.allclose(fixed_gaps, fixed_gaps.T):
             raise Exception("fixed_gaps 必须是对称矩阵")
-        G = np.zeros(shape=(p, p))
+        graph_matrix = np.zeros(shape=(p, p))
     
     # 包装为 Matrix 对象
-    G = Matrix(G)
-    G.diag(0)  # 对角线设为 0（节点不与自身相连）
+    graph_matrix = Matrix(graph_matrix)
+    graph_matrix.diag(0)  # 对角线设为 0（节点不与自身相连）
     
     # 初始化固定边矩阵
     if fixed_edges is None:
@@ -127,9 +127,9 @@ def skeleton(
     
     # 初始化分离集和最大 p 值矩阵
     sepset = [[None] * p for _ in range(p)]  # 分离集
-    pMax = np.full((p, p), float('Inf'))     # 最大 p 值
-    pMax = Matrix(pMax)
-    pMax.diag(1)
+    p_max = np.full((p, p), float('Inf'))     # 最大 p 值
+    p_max = Matrix(p_max)
+    p_max.diag(1)
     
     # 主循环变量
     done = False
@@ -137,14 +137,14 @@ def skeleton(
     n_edge_tests = [0] * p  # 边检验次数统计
     
     # 主循环：逐步增加条件集大小
-    while not done and G.any() and order <= m_max:
+    while not done and graph_matrix.any() and order <= m_max:
         order_plus_one = order + 1
         n_edge_tests[order_plus_one] = 0
         done = True
         
         # 获取当前所有边的索引
-        edge_indices = G.which(1)
-        num_edges = G.shape[1]
+        edge_indices = graph_matrix.which(1)
+        num_edges = graph_matrix.shape[1]
         
         # 遍历所有边
         for i in range(num_edges):
@@ -155,9 +155,9 @@ def skeleton(
             y = edge_indices[i, 1]
             
             # 检查边是否存在且不是固定边
-            if G.M[y, x] and not fixed_edges[y, x]:
+            if graph_matrix.M[y, x] and not fixed_edges[y, x]:
                 # 获取 x 的邻居（不包括 y）
-                neighbors_bool = G.M[:, x].copy()
+                neighbors_bool = graph_matrix.M[:, x].copy()
                 neighbors_bool[y] = 0
                 neighbors = [
                     idx for idx in seq_p 
@@ -171,9 +171,9 @@ def skeleton(
                         done = False  # 还需要继续更高阶的检验
                     
                     # 生成初始条件集
-                    S = list(range(order + 1))
-                    if len(S) == 0:
-                        return G
+                    condition_set_indices = list(range(order + 1))
+                    if len(condition_set_indices) == 0:
+                        return graph_matrix
                     
                     # 遍历所有大小为 order 的条件集
                     while True:
@@ -181,13 +181,13 @@ def skeleton(
                         
                         # 执行独立性检验
                         try:
-                            condition_set = [
-                                neighbors[s] for s in S 
+                            actual_condition_set = [
+                                neighbors[s] for s in condition_set_indices 
                                 if s < len(neighbors)
                             ]
-                            p_value = indep_test(x, y, condition_set, suff_stat)
+                            p_value = indep_test(x, y, actual_condition_set, suff_stat)
                         except Exception as e:
-                            print(f"检验出错: S={S}, neighbors={neighbors}, error={e}")
+                            print(f"检验出错: S={condition_set_indices}, neighbors={neighbors}, error={e}")
                             p_value = None
                         
                         # 处理缺失 p 值
@@ -195,32 +195,32 @@ def skeleton(
                             p_value = int(na_delete)
                         
                         # 更新最大 p 值
-                        if pMax.M[x, y] < p_value:
-                            pMax.M[x, y] = p_value
+                        if p_max.M[x, y] < p_value:
+                            p_max.M[x, y] = p_value
                         
                         # 如果 p 值大于阈值，删除边并记录分离集
                         if p_value >= alpha:
-                            G.M[x, y] = G.M[y, x] = 0
+                            graph_matrix.M[x, y] = graph_matrix.M[y, x] = 0
                             try:
-                                sepset[x][y] = [neighbors[s] for s in S]
+                                sepset[x][y] = [neighbors[s] for s in condition_set_indices]
                             except Exception:
-                                return G
+                                return graph_matrix
                             break
                         
                         # 获取下一个条件集
-                        next_set = get_next_set(num_neighbors, order, S)
-                        if next_set is None or next_set['waslast']:
+                        next_set_result = get_next_set(num_neighbors, order, condition_set_indices)
+                        if next_set_result is None or next_set_result['waslast']:
                             break
-                        S = next_set['set']
+                        condition_set_indices = next_set_result['set']
         
         order += 1
     
     # 对称化最大 p 值矩阵
     for i in range(1, p):
         for j in range(i + 1, p):
-            pMax.M[i, j] = pMax.M[j, i] = max(pMax.M[i, j], pMax.M[j, i])
+            p_max.M[i, j] = p_max.M[j, i] = max(p_max.M[i, j], p_max.M[j, i])
     
-    return G
+    return graph_matrix
 
 
 # 保持向后兼容的别名
