@@ -104,7 +104,7 @@ py_pcalg/
 ├── test_data.csv   # 测试数据
 ├── demo/           # 演示文件夹
 │   ├── demo.fi
-│   └── WechatIMG7.png
+│   └── causal_graph_demo.png
 └── README.md       # 本文档
 ```
 
