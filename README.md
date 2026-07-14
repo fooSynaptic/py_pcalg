@@ -130,6 +130,3 @@ pytest
 
 MIT — see repository root.
 
----
-
-*Maintained as fooSynaptic's flagship original tool. Issues & PRs welcome.*
