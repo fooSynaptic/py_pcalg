@@ -4,9 +4,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-pytest-brightgreen.svg)](tests/)
 
-**Lightweight PC algorithm for causal skeleton discovery** — a pip-installable Python tool for learning causal graph structure from observational data.
+**Lightweight PC algorithm for causal skeleton discovery** — `pip` + CLI + graph viz from a CSV in ~30 seconds.
 
-> 纯 Python 实现的 **PC 算法**（Peter–Clark），用于从观测数据中发现因果骨架。比 R `pcalg` 更轻量，比 `causal-learn` 更易读。
+> 纯 Python **PC 算法**（Peter–Clark）：从观测数据画因果骨架。比 R `pcalg` 更轻，比 `causal-learn` 更易读。
+
+<p align="center">
+  <img src="demo/causal_graph_demo.png" alt="pcalg demo skeleton" width="520"/>
+</p>
+
+```bash
+pip install -e .
+pcalg demo
+# or: pcalg run your_data.csv --alpha 0.05 -o skeleton.png
+```
+
+> Useful? **Star ⭐** so others can find a small causal-discovery CLI.
 
 ---
 
@@ -14,7 +26,7 @@
 
 | | py-pcalg | causal-learn | R pcalg |
 |---|----------|--------------|---------|
-| Install | `pip install` + CLI | heavier deps | R runtime |
+| Install | `pip` + CLI | heavier deps | R runtime |
 | Code size | ~1k LOC, readable | full toolkit | reference impl |
 | Use case | quick skeleton + viz | research pipeline | production stats |
 
@@ -24,7 +36,7 @@
 
 ```bash
 pip install -e .          # from source
-# or after publishing:
+# after PyPI publish:
 # pip install py-pcalg
 ```
 
